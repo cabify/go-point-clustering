@@ -40,19 +40,21 @@ func (s *DBScanSuite) TestRangeQueryKDTree(c *C) {
 	c.Assert(ok, Equals, true)
 
 	for _, pt := range s.points {
-		pts1 := tree.InRange(pt, eps, nil)
-		pts2 := RegionQuery(s.points, &pt, eps)
+		pts1, err1 := tree.InRange(pt, eps, nil)
+		pts2, err2 := RegionQuery(s.points, &pt, eps)
 
 		sort.Ints(pts1)
 		sort.Ints(pts2)
 
 		c.Assert(pts1, DeepEquals, pts2)
+		c.Assert(err1, Equals, nil)
+		c.Assert(err2, Equals, nil)
 	}
 
 }
 
 func (s *DBScanSuite) TestDBScan(c *C) {
-	clusters, noise := DBScan(s.points, 0.8, 10)
+	clusters, noise, err := DBScan(s.points, 0.8, 10)
 
 	goodClusters := []Cluster{
 		{C: 0, Points: []int{0, 17, 19, 30, 282, 353, 363, 446, 460, 510, 620, 694, 703, 711, 785, 801, 810, 943, 1104, 1136, 1147, 1184, 1235, 1344, 1466, 104, 569, 697, 760, 809, 1100, 1254, 10, 41, 42, 44, 47, 62, 69, 109, 110, 196, 216, 243, 273, 289, 309, 314, 327, 334, 350, 356, 409, 458, 487, 514, 593, 692, 698, 708, 722, 728, 730, 783, 799, 846, 875, 901, 912, 930, 1015, 1034, 1047, 1115, 1128, 1162, 1195, 1201, 1202, 1225, 1227, 1228, 1366, 1399, 1495, 1017, 186, 635, 95, 855, 628, 677, 721, 1256, 1326, 966, 975, 1475, 76, 451, 1480}},
@@ -127,6 +129,8 @@ func (s *DBScanSuite) TestDBScan(c *C) {
 	for _, b := range allPoints {
 		c.Check(b, Equals, true)
 	}
+
+	c.Check(err, Equals, nil)
 }
 
 func (s *DBScanSuite) BenchmarkDBScan(c *C) {

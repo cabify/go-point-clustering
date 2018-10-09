@@ -23,8 +23,9 @@ func (s *PointSuite) SetUpTest(c *C) {
 func (s *PointSuite) TestCentroidAndBounds(c *C) {
 	c1 := Cluster{C: 0, Points: []int{0, 1, 2}}
 
-	center, min, max := c1.CentroidAndBounds(s.points)
+	center, min, max, err := c1.CentroidAndBounds(s.points)
 	c.Check(center, DeepEquals, Point{30.244612333333333, 59.95964566666667})
 	c.Check(min, DeepEquals, Point{30.244358, 59.955975})
 	c.Check(max, DeepEquals, Point{30.244759, 59.96698})
+	c.Check(err, Equals, nil)
 }

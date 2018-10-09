@@ -66,13 +66,17 @@ func TestInRange(t *testing.T) {
 		tree := NewKDTree(PointList(pts))
 
 		in := make(map[int]bool, len(pts))
-		for _, n := range tree.InRange(pt, r, nil) {
+
+		list, _ := tree.InRange(pt, r, nil)
+
+		for _, n := range list {
 			in[n] = true
 		}
 
 		num := 0
 		for i, p := range pts {
-			if pt.sqDist(&p) <= r*r {
+			dist, _ := pt.sqDist(&p)
+			if dist <= r*r {
 				num++
 				if !in[i] {
 					return false

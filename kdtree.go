@@ -56,16 +56,16 @@ func (tree *KDTree) insert(t *T, depth int, n *T) *T {
 // distance from the given point to the given slice, which may be nil.
 // To  avoid allocation, the slice can be pre-allocated with a larger
 // capacity and re-used across multiple calls to InRange.
-func (tree *KDTree) InRange(pt Point, dist float64, nodes []int) []int {
+func (tree *KDTree) InRange(pt Point, dist float64, nodes []int) ([]int, error) {
 	if dist < 0 {
-		return nodes
+		return nodes, nil
 	}
 	return tree.inRange(tree.Root, &pt, dist, nodes)
 }
 
-func (tree *KDTree) inRange(t *T, pt *Point, r float64, nodes []int) []int {
+func (tree *KDTree) inRange(t *T, pt *Point, r float64, nodes []int) ([]int, error) {
 	if t == nil {
-		return nodes
+		return nodes, nil
 	}
 
 	diff := pt[t.split] - tree.Points[t.PointID][t.split]
@@ -83,18 +83,31 @@ func (tree *KDTree) inRange(t *T, pt *Point, r float64, nodes []int) []int {
 	p2[1-t.split] = (pt[1-t.split] + tree.Points[t.PointID][1-t.split]) / 2
 	p2[t.split] = tree.Points[t.PointID][t.split]
 
-	dist := p1.sqDist(&p2)
+	dist, err := p1.sqDist(&p2)
+	if err != nil {
+		return nil, err
+	}
 
-	nodes = tree.inRange(thisSide, pt, r, nodes)
+	nodes, err = tree.inRange(thisSide, pt, r, nodes)
+	if err != nil {
+		return nil, err
+	}
 	if dist <= r*r {
-		if tree.Points[t.PointID].sqDist(pt) < r*r {
+		dist2, err := tree.Points[t.PointID].sqDist(pt)
+		if err != nil {
+			return nil, err
+		}
+		if dist2 < r*r {
 			nodes = append(nodes, t.PointID)
 			nodes = append(nodes, t.EqualIDs...)
 		}
-		nodes = tree.inRange(otherSide, pt, r, nodes)
+		nodes, err = tree.inRange(otherSide, pt, r, nodes)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return nodes
+	return nodes, nil
 }
 
 // Height returns the height of the K-D tree.

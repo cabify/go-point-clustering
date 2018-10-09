@@ -38,7 +38,7 @@ type EpsFunction func(pt Point) float64
 //
 // eps is clustering radius in km
 // minPoints in minumum number of points in eps-neighbourhood (density)
-func DBScan(points PointList, eps float64, minPoints int) (clusters []Cluster, noise []int) {
+func DBScan(points PointList, eps float64, minPoints int) (clusters []Cluster, noise []int, err error) {
 	visited := make([]bool, len(points))
 	members := make([]bool, len(points))
 	clusters = []Cluster{}
@@ -58,7 +58,10 @@ func DBScan(points PointList, eps float64, minPoints int) (clusters []Cluster, n
 		}
 		visited[i] = true
 
-		neighborPts := kdTree.InRange(points[i], eps, nil)
+		neighborPts, err := kdTree.InRange(points[i], eps, nil)
+		if err != nil {
+			return nil, nil, err
+		}
 		if len(neighborPts) < minPoints {
 			noise = append(noise, i)
 		} else {
@@ -75,7 +78,10 @@ func DBScan(points PointList, eps float64, minPoints int) (clusters []Cluster, n
 				k := neighborPts[j]
 				if !visited[k] {
 					visited[k] = true
-					moreNeighbors := kdTree.InRange(points[k], eps, nil)
+					moreNeighbors, err := kdTree.InRange(points[k], eps, nil)
+					if err != nil {
+						return nil, nil, err
+					}
 					if len(moreNeighbors) >= minPoints {
 						for _, p := range moreNeighbors {
 							if !neighborUnique.Test(uint(p)) {
@@ -101,14 +107,18 @@ func DBScan(points PointList, eps float64, minPoints int) (clusters []Cluster, n
 // RegionQuery is simple way O(N) to find points in neighbourhood
 //
 // It is roughly equivalent to kdTree.InRange(points[i], eps, nil)
-func RegionQuery(points PointList, P *Point, eps float64) []int {
+func RegionQuery(points PointList, P *Point, eps float64) ([]int, error) {
 	result := []int{}
 
 	for i := 0; i < len(points); i++ {
-		if points[i].sqDist(P) < eps*eps {
+		dist, err := points[i].sqDist(P)
+		if err != nil {
+			return nil, err
+		}
+		if dist < eps*eps {
 			result = append(result, i)
 		}
 	}
 
-	return result
+	return result, nil
 }

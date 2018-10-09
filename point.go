@@ -1,6 +1,10 @@
 // Package cluster implements DBScan clustering on (lat, lon) using K-D Tree
 package cluster
 
+import (
+	"errors"
+)
+
 // Point is longitue, latittude
 type Point [2]float64
 
@@ -14,7 +18,7 @@ type Cluster struct {
 }
 
 // sqDist returns squared (w/o sqrt & normalization) distance between two points
-func (a *Point) sqDist(b *Point) float64 {
+func (a *Point) sqDist(b *Point) (float64, error) {
 	return DistanceSphericalFast(a, b)
 }
 
@@ -29,9 +33,9 @@ func (a *Point) GreaterEq(b *Point) bool {
 }
 
 // CentroidAndBounds calculates center and cluster bounds
-func (c *Cluster) CentroidAndBounds(points PointList) (center, min, max Point) {
+func (c *Cluster) CentroidAndBounds(points PointList) (center, min, max Point, err error) {
 	if len(c.Points) == 0 {
-		panic("empty cluster")
+		return center, min, max, errors.New("empty cluster")
 	}
 
 	min = Point{180.0, 90.0}

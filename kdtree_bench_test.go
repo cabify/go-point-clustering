@@ -200,7 +200,8 @@ func inRangeLinearSz(sz int, b *testing.B) {
 		local = local[:0]
 		rr := rs[i] * rs[i]
 		for j := range pts {
-			if pts[j].sqDist(&pt) < rr {
+			dist, _ := pts[j].sqDist(&pt)
+			if dist < rr {
 				local = append(local, j)
 			}
 		}

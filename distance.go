@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -27,7 +28,7 @@ func DistanceSpherical(p1, p2 *Point) float64 {
 // FastSine caclulates sinus approximated to parabola
 //
 // Taken from: http://forum.devmaster.net/t/fast-and-accurate-sine-cosine/9648
-func FastSine(x float64) float64 {
+func FastSine(x float64) (float64, error) {
 	const (
 		B = 4 / math.Pi
 		C = -4 / (math.Pi * math.Pi)
@@ -35,15 +36,15 @@ func FastSine(x float64) float64 {
 	)
 
 	if x > math.Pi || x < -math.Pi {
-		panic("out of range")
+		return 0.0, fmt.Errorf("%f out of range", x)
 	}
 
 	y := B*x + C*x*math.Abs(x)
-	return P*(y*math.Abs(y)-y) + y
+	return P*(y*math.Abs(y)-y) + y, nil
 }
 
 // FastCos calculates cosinus from sinus
-func FastCos(x float64) float64 {
+func FastCos(x float64) (float64, error) {
 	x += math.Pi / 2.0
 	if x > math.Pi {
 		x -= 2 * math.Pi
@@ -59,9 +60,13 @@ func FastCos(x float64) float64 {
 //
 // In this library eps (distance) is adjusted so that we don't need
 // to do sqrt and multiplication
-func DistanceSphericalFast(p1, p2 *Point) float64 {
-	v1 := (p1[1] - p2[1])
-	v2 := (p1[0] - p2[0]) * FastCos((p1[1]+p2[1])/2.0*DegreeRad)
+func DistanceSphericalFast(p1, p2 *Point) (float64, error) {
+	v1 := p1[1] - p2[1]
+	fastCos, err := FastCos((p1[1]+p2[1])/2.0*DegreeRad)
+	if err != nil {
+		return 0.0, fmt.Errorf("calculate spherical dist [%f, %f] to [%f, %f]: %s", p1[0], p1[1], p2[0], p2[1], err)
+	}
+	v2 := (p1[0] - p2[0]) * fastCos
 
-	return v1*v1 + v2*v2
+	return v1*v1 + v2*v2, nil
 }

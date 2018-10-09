@@ -17,10 +17,18 @@ func (s *DistanceSuite) SetUpTest(c *C) {
 }
 
 func (s *DistanceSuite) TestFastCos(c *C) {
-	c.Check(FastCos(0), Equals, math.Cos(0))
-	c.Check(math.Abs(FastCos(0.1)-math.Cos(0.1)) < 0.001, Equals, true)
-	c.Check(math.Abs(FastCos(-0.1)-math.Cos(-0.1)) < 0.001, Equals, true)
-	c.Check(math.Abs(FastCos(1.0)-math.Cos(1.0)) < 0.001, Equals, true)
+	fc, err := FastCos(0)
+	c.Check(fc, Equals, math.Cos(0))
+	c.Check(err, Equals, nil)
+	fc, err = FastCos(0.1)
+	c.Check(math.Abs(fc-math.Cos(0.1))<0.001, Equals, true)
+	c.Check(err, Equals, nil)
+	fc, err = FastCos(-0.1)
+	c.Check(math.Abs(fc-math.Cos(-0.1)) < 0.001, Equals, true)
+	c.Check(err, Equals, nil)
+	fc, err = FastCos(1.0)
+	c.Check(math.Abs(fc-math.Cos(1.0)) < 0.001, Equals, true)
+	c.Check(err, Equals, nil)
 }
 
 func (s *DistanceSuite) TestDistanceSpherical(c *C) {
@@ -31,12 +39,22 @@ func (s *DistanceSuite) TestDistanceSpherical(c *C) {
 }
 
 func (s *DistanceSuite) TestDistanceSphericalFast(c *C) {
-	c.Check(DistanceSphericalFast(&s.p1, &s.p2), Equals, 4.3026720164084415e-10)
-	c.Check(DistanceSphericalFast(&s.p2, &s.p1), Equals, 4.3026720164084415e-10)
-	c.Check(DistanceSphericalFast(&s.p1, &s.p1), Equals, 0.0)
-	c.Check(DistanceSphericalFast(&s.p2, &s.p2), Equals, 0.0)
+	dc, err := DistanceSphericalFast(&s.p1, &s.p2)
+	c.Check(dc, Equals, 4.3026720164084415e-10)
+	c.Check(err, Equals, nil)
+	dc, err = DistanceSphericalFast(&s.p2, &s.p1)
+	c.Check(dc, Equals, 4.3026720164084415e-10)
+	c.Check(err, Equals, nil)
+	dc, err = DistanceSphericalFast(&s.p1, &s.p1)
+	c.Check(dc, Equals, 0.0)
+	c.Check(err, Equals, nil)
+	dc, err = DistanceSphericalFast(&s.p2, &s.p2)
+	c.Check(dc, Equals, 0.0)
+	c.Check(err, Equals, nil)
 
-	c.Check(math.Abs(math.Sqrt(DistanceSphericalFast(&s.p1, &s.p2))*DegreeRad*EarthR-
+	dc, err = DistanceSphericalFast(&s.p1, &s.p2)
+	c.Check(err, Equals, nil)
+	c.Check(math.Abs(math.Sqrt(dc)*DegreeRad*EarthR-
 		DistanceSpherical(&s.p1, &s.p2)) < 0.000001, Equals, true)
 }
 
